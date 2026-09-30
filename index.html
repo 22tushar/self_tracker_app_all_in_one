@@ -15,6 +15,39 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        @media (max-width: 640px) {
+            body { padding-bottom: 72px; }
+            header { padding-bottom: env(safe-area-inset-bottom); }
+            #mobile-tab-nav {
+                position: fixed;
+                left: 0; right: 0; bottom: 0;
+                z-index: 60;
+                width: 100%;
+                border-radius: 16px 16px 0 0;
+                padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+                background: rgba(15, 23, 42, 0.96);
+                backdrop-filter: blur(14px);
+                -webkit-backdrop-filter: blur(14px);
+                box-shadow: 0 -8px 24px rgba(0,0,0,.28);
+            }
+            #mobile-tab-nav button {
+                flex: 1;
+                min-width: 0;
+                min-height: 48px;
+                padding: 7px 4px !important;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 3px;
+                font-size: 10px !important;
+                line-height: 1.1;
+            }
+            #mobile-tab-nav button i { margin-right: 0 !important; font-size: 15px; }
+            #activity-analytics { padding: 12px; border-radius: 20px; }
+            #activity-analytics .analytics-stat { padding: 8px; }
+            #analytics-calendar { gap: 4px; }
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
@@ -37,15 +70,15 @@
             </div>
 
             <!-- Navigation Mode Switcher -->
-            <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
+            <div id="mobile-tab-nav" class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
                 <button onclick="switchTab('hub')" id="tab-hub" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow-md">
-                    <i class="fa-solid fa-house mr-1"></i> Personal Hub
+                    <i class="fa-solid fa-house mr-1"></i><span>Personal Hub</span>
                 </button>
                 <button onclick="switchTab('dsa')" id="tab-dsa" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-code mr-1"></i> DSA Mode
+                    <i class="fa-solid fa-code mr-1"></i><span>DSA Mode</span>
                 </button>
                 <button onclick="switchTab('health')" id="tab-health" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-heart-pulse mr-1"></i> Health Mode
+                    <i class="fa-solid fa-heart-pulse mr-1"></i><span>Health Mode</span>
                 </button>
             </div>
 
