@@ -174,33 +174,6 @@
                 </div>
             </section>
 
-            <!-- ==================== ACTIVITY CALENDAR & ANALYTICS ==================== -->
-            <section class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl" id="activity-analytics">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <div>
-                        <h2 class="text-lg font-bold text-white flex items-center gap-2"><span class="p-2 bg-cyan-500/10 text-cyan-400 rounded-xl border border-cyan-500/20"><i class="fa-solid fa-calendar-days"></i></span> Activity Calendar & Analytics</h2>
-                        <p class="text-xs text-slate-400 mt-1">Auto-updates from Problem of the Day opens and daily health-target completion.</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="changeAnalyticsMonth(-1)" class="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs hover:bg-slate-700">‹</button>
-                        <span id="analytics-month-label" class="text-sm font-semibold text-white min-w-32 text-center"></span>
-                        <button onclick="changeAnalyticsMonth(1)" class="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs hover:bg-slate-700">›</button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                    <div class="bg-slate-950 rounded-2xl p-4 border border-slate-800"><div class="text-xs text-slate-400">POTD Opens</div><div id="stat-potd-opens" class="text-2xl font-bold text-indigo-400 mt-1">0</div><div class="text-[10px] text-slate-500">this month</div></div>
-                    <div class="bg-slate-950 rounded-2xl p-4 border border-slate-800"><div class="text-xs text-slate-400">Health Days</div><div id="stat-health-days" class="text-2xl font-bold text-emerald-400 mt-1">0</div><div class="text-[10px] text-slate-500">targets achieved</div></div>
-                    <div class="bg-slate-950 rounded-2xl p-4 border border-slate-800"><div class="text-xs text-slate-400">Active Days</div><div id="stat-active-days" class="text-2xl font-bold text-cyan-400 mt-1">0</div><div class="text-[10px] text-slate-500">POTD or health</div></div>
-                    <div class="bg-slate-950 rounded-2xl p-4 border border-slate-800"><div class="text-xs text-slate-400">Current Streak</div><div id="stat-streak" class="text-2xl font-bold text-amber-400 mt-1">0</div><div class="text-[10px] text-slate-500">active days</div></div>
-                </div>
-                <div id="analytics-calendar" class="grid grid-cols-7 gap-1.5"></div>
-                <div class="flex flex-wrap gap-4 mt-4 text-[10px] text-slate-400">
-                    <span><i class="fa-solid fa-circle text-indigo-400 mr-1"></i>POTD opened</span>
-                    <span><i class="fa-solid fa-circle text-emerald-400 mr-1"></i>Health target achieved</span>
-                    <span><i class="fa-solid fa-circle text-cyan-400 mr-1"></i>Both</span>
-                </div>
-            </section>
-
             <!-- OFFICE / WORK TASKS SECTION -->
             <section class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
                 <h2 class="text-lg font-bold text-white flex items-center gap-2 mb-2">
@@ -253,7 +226,7 @@
                             Choose your preferred topic from Striver's curated sheets, configure your reminder notification time, and receive daily random questions automatically.
                         </p>
                         <div class="flex flex-wrap gap-3 pt-2">
-                            <a id="potd-link" href="#" target="_blank" onclick="logPotdOpen()" class="hidden inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-lg shadow-indigo-600/30 transition-all">
+                            <a id="potd-link" href="#" target="_blank" class="hidden inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-lg shadow-indigo-600/30 transition-all">
                                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Solve Problem
                             </a>
                             <button onclick="getRandomPotd()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm border border-slate-700 transition-all">
@@ -687,8 +660,6 @@
         // --- App State & Initialization ---
         let selectedTopic = localStorage.getItem('self_tracker_topic') || '';
         let notifTime = localStorage.getItem('self_tracker_time') || '09:00';
-        const ACTIVITY_KEY = 'self_tracker_activity_history';
-        let analyticsMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         
         window.addEventListener('DOMContentLoaded', () => {
             renderPersonalNotes();
@@ -700,7 +671,6 @@
                 document.getElementById('topic-selector').value = selectedTopic;
                 getRandomPotd();
             }
-            renderActivityAnalytics();
             registerServiceWorker();
         });
 
@@ -1158,9 +1128,6 @@ END:VCALENDAR`;
             document.getElementById('bar-carbs').style.width = Math.min(100, (carb / targetCarbs) * 100) + '%';
             document.getElementById('bar-fats').style.width = Math.min(100, (fat / targetFats) * 100) + '%';
 
-            const achieved = healthTargetAchieved(cals, prot, carb, fat, { cal: targetCals, protein: targetProtein, carbs: targetCarbs, fats: targetFats });
-            updateActivity({ healthAchieved: achieved });
-
             const vitaminStatus = document.getElementById('vitamin-status');
             if (salad >= 100 || sabjiQty >= 150) {
                 vitaminStatus.textContent = "Optimal (Good Fiber, Vitamins A & C)";
@@ -1183,59 +1150,6 @@ END:VCALENDAR`;
             document.getElementById('log-snacks').value = 0;
             calculateIntake();
         }
-
-        // --- Activity Calendar & Analytics ---
-        function activityDateKey(date = new Date()) {
-            const d = new Date(date);
-            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        }
-        function getActivityHistory() { return JSON.parse(localStorage.getItem(ACTIVITY_KEY) || '{}'); }
-        function saveActivityHistory(data) { localStorage.setItem(ACTIVITY_KEY, JSON.stringify(data)); }
-        function updateActivity(patch) {
-            const data = getActivityHistory();
-            const key = activityDateKey();
-            data[key] = Object.assign({ potdOpens: 0, healthAchieved: false }, data[key] || {}, patch);
-            saveActivityHistory(data);
-            renderActivityAnalytics();
-        }
-        function logPotdOpen() {
-            const data = getActivityHistory();
-            const key = activityDateKey();
-            const current = data[key] || { potdOpens: 0, healthAchieved: false };
-            data[key] = { ...current, potdOpens: (current.potdOpens || 0) + 1 };
-            saveActivityHistory(data);
-            renderActivityAnalytics();
-        }
-        function healthTargetAchieved(cals, prot, carb, fat, targets) {
-            return cals >= targets.cal && prot >= targets.protein && carb >= targets.carbs && fat >= targets.fats;
-        }
-        function renderActivityAnalytics() {
-            const data = getActivityHistory();
-            const y = analyticsMonth.getFullYear(), m = analyticsMonth.getMonth();
-            document.getElementById('analytics-month-label').textContent = analyticsMonth.toLocaleString(undefined,{month:'long',year:'numeric'});
-            const daysInMonth = new Date(y,m+1,0).getDate();
-            const firstDay = new Date(y,m,1).getDay();
-            let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="text-center text-[10px] font-semibold text-slate-500 py-1">${d}</div>`).join('');
-            for(let i=0;i<firstDay;i++) html += '<div class="aspect-square rounded-lg bg-slate-950/40"></div>';
-            let potd=0, health=0, active=0;
-            for(let day=1;day<=daysInMonth;day++) {
-                const key=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-                const a=data[key] || {};
-                const p=Number(a.potdOpens||0)>0, h=!!a.healthAchieved;
-                if(p) potd += Number(a.potdOpens||0); if(h) health++; if(p||h) active++;
-                const today = key===activityDateKey();
-                const bg = p&&h ? 'bg-cyan-500/30 border-cyan-400' : h ? 'bg-emerald-500/25 border-emerald-500/50' : p ? 'bg-indigo-500/25 border-indigo-500/50' : 'bg-slate-950 border-slate-800';
-                html += `<div title="${key}: ${p?`POTD opened ${a.potdOpens}x`:''}${p&&h?' • ':''}${h?'Health target achieved':''}" class="aspect-square rounded-lg border ${bg} ${today?'ring-2 ring-white/30':''} p-1.5 flex flex-col justify-between"><span class="text-[10px] ${today?'text-white font-bold':'text-slate-500'}">${day}</span><span class="text-[8px] text-center">${p&&h?'●':h?'♥':p?'•':''}</span></div>`;
-            }
-            document.getElementById('analytics-calendar').innerHTML=html;
-            document.getElementById('stat-potd-opens').textContent=potd;
-            document.getElementById('stat-health-days').textContent=health;
-            document.getElementById('stat-active-days').textContent=active;
-            let streak=0, cursor=new Date();
-            while(true){ const k=activityDateKey(cursor), a=data[k]; if(a && ((a.potdOpens||0)>0 || a.healthAchieved)){streak++; cursor.setDate(cursor.getDate()-1);} else break; }
-            document.getElementById('stat-streak').textContent=streak;
-        }
-        function changeAnalyticsMonth(delta) { analyticsMonth = new Date(analyticsMonth.getFullYear(), analyticsMonth.getMonth()+delta, 1); renderActivityAnalytics(); }
 
         // --- PWA Setup & Manifest Generation ---
         let deferredPrompt;
